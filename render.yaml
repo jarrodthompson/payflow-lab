@@ -1,0 +1,31 @@
+# Render Blueprint for PayFlow Lab (Path 1: Render + Supabase Postgres).
+# Deploy: push to GitHub, then in Render → New → Blueprint → pick this repo.
+# Set DATABASE_URL (from Supabase) in the dashboard; the rest are pre-filled.
+services:
+  - type: web
+    name: payflow-lab
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build && npm --prefix web install && npm --prefix web run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Supabase connection string — set this in the Render dashboard (do NOT commit it).
+      # Supabase → Project Settings → Database → Connection string → URI.
+      - key: DATABASE_URL
+        sync: false
+      # Supabase requires SSL.
+      - key: PGSSL
+        value: "true"
+      # Create the schema automatically on first boot.
+      - key: AUTO_MIGRATE
+        value: "true"
+      # Protects fault/incident/simulation/routing/recon-run endpoints.
+      - key: ADMIN_API_KEY
+        generateValue: true
+      # Allow the merchant app / APK to call the API. Tighten to your app origin later.
+      - key: CORS_ORIGIN
+        value: "*"
+      # BASE_URL is auto-detected from RENDER_EXTERNAL_URL — no need to set it.

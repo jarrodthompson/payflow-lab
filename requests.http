@@ -1,0 +1,185 @@
+### PayFlow Lab — example requests (VS Code REST Client / IntelliJ HTTP)
+@base = http://localhost:3000
+
+### Health
+GET {{base}}/health
+
+### Create a payment (new -> 201)
+POST {{base}}/api/v1/payments
+Content-Type: application/json
+Idempotency-Key: ORDER-837463
+
+{
+  "merchantId": "MERCHANT_001",
+  "amount": 49900,
+  "currency": "ZAR",
+  "paymentMethod": "card",
+  "customer": { "email": "test@example.com" }
+}
+
+### Replay the SAME idempotency key + body (-> 200, same paymentId)
+POST {{base}}/api/v1/payments
+Content-Type: application/json
+Idempotency-Key: ORDER-837463
+
+{
+  "merchantId": "MERCHANT_001",
+  "amount": 49900,
+  "currency": "ZAR",
+  "paymentMethod": "card",
+  "customer": { "email": "test@example.com" }
+}
+
+### Reuse the key with a DIFFERENT body (-> 409 IDEMPOTENCY_KEY_REUSED)
+POST {{base}}/api/v1/payments
+Content-Type: application/json
+Idempotency-Key: ORDER-837463
+
+{
+  "merchantId": "MERCHANT_001",
+  "amount": 10000,
+  "currency": "ZAR",
+  "paymentMethod": "card"
+}
+
+### NGN routes to Paystack
+POST {{base}}/api/v1/payments
+Content-Type: application/json
+
+{
+  "merchantId": "MERCHANT_002",
+  "amount": 250000,
+  "currency": "NGN",
+  "paymentMethod": "card"
+}
+
+### Fetch a payment (replace with a real reference)
+GET {{base}}/api/v1/payments/PAY_847293
+
+### Timeline
+GET {{base}}/api/v1/payments/PAY_847293/timeline
+
+### --- Phase 2: simulation + stats ---
+
+### Start a bulk simulation (1000 payments at 200/s) -> 202 with runId
+POST {{base}}/api/v1/simulation/start
+Content-Type: application/json
+
+{
+  "transactions": 1000,
+  "transactionsPerSecond": 200
+}
+
+### Poll a run (replace with the returned runId)
+GET {{base}}/api/v1/simulation/SIM_xxxxxxxx
+
+### List all runs
+GET {{base}}/api/v1/simulation
+
+### Aggregate stats overview
+GET {{base}}/api/v1/stats
+
+### --- Phase 3: webhooks ---
+
+### Forged webhook (bad signature) -> expect 401
+POST {{base}}/webhooks/stripe
+Content-Type: application/json
+stripe-signature: t=1,v1=deadbeef
+
+{
+  "id": "evt_forged",
+  "type": "payment_intent.succeeded",
+  "data": { "object": { "id": "pi_x" } }
+}
+
+# NOTE: valid webhooks are delivered automatically by the fake PSP after you
+# create a payment. Create one, wait ~3s, then GET its /timeline to see
+# WEBHOOK_RECEIVED -> WEBHOOK_SIGNATURE_VERIFIED -> PAYMENT_CONFIRMED.
+# To find payments stuck in `pending`, look at /stats after a simulation drains.
+
+### --- Phase 4: REAL Paystack checkout (needs PAYSTACK_SECRET_KEY in .env) ---
+
+### Start a real checkout -> returns authorizationUrl (open it, pay with a test card)
+POST {{base}}/api/v1/checkout
+Content-Type: application/json
+
+{
+  "merchantId": "MERCHANT_001",
+  "amount": 500000,
+  "currency": "NGN",
+  "customer": { "email": "buyer@example.com" }
+}
+
+### Manually verify a checkout (replace with the returned paymentId)
+POST {{base}}/api/v1/checkout/PAY_xxxxxx/verify
+
+### --- Phase 5: routing & retries ---
+
+### View routing config + live provider health
+GET {{base}}/api/v1/routing
+
+### Switch to performance-based routing
+POST {{base}}/api/v1/routing
+Content-Type: application/json
+
+{ "strategy": "performance" }
+
+### Switch to weighted routing
+POST {{base}}/api/v1/routing
+Content-Type: application/json
+
+{ "strategy": "weighted" }
+
+### EUR is stripe-only (capability constraint) — create a few and check provider
+POST {{base}}/api/v1/payments
+Content-Type: application/json
+
+{ "merchantId": "M1", "amount": 20000, "currency": "EUR", "paymentMethod": "card" }
+
+### NGN never routes to stripe (only paystack/flutterwave)
+POST {{base}}/api/v1/payments
+Content-Type: application/json
+
+{ "merchantId": "M1", "amount": 20000, "currency": "NGN", "paymentMethod": "card" }
+
+### --- Phase 6: reconciliation ---
+# Tip: run a simulation first, wait ~12s, then reconcile a SHORT window so you
+# only compare freshly-generated data (older txns predate the PSP ledger).
+
+### Run reconciliation over the last 3 minutes
+POST {{base}}/api/v1/reconciliation/run
+Content-Type: application/json
+
+{ "windowMinutes": 3 }
+
+### List reconciliation runs
+GET {{base}}/api/v1/reconciliation
+
+### View a run's findings (replace with the returned runId)
+GET {{base}}/api/v1/reconciliation/1
+
+### --- Phase 8: faults, incidents, log search ---
+
+### Inject a fault (expire stripe credentials)
+POST {{base}}/api/v1/faults
+Content-Type: application/json
+
+{ "provider": "stripe", "authError": true }
+
+### View active faults
+GET {{base}}/api/v1/faults
+
+### Clear a provider's faults
+DELETE {{base}}/api/v1/faults/stripe
+
+### Start an incident drill (root cause hidden)
+POST {{base}}/api/v1/incidents/start
+
+### Resolve an incident (reveals root cause, lifts fault) — replace id
+POST {{base}}/api/v1/incidents/INC_xxxxxxxx/resolve
+
+### Log search: failed PSP responses on stripe in the last 15 min
+GET {{base}}/api/v1/events?type=PSP_RESPONSE_RECEIVED&provider=stripe&sinceMinutes=15
+
+### Log search: everything for one payment
+GET {{base}}/api/v1/events?reference=PAY_123456

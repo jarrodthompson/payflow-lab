@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Demo Store — PayFlow Lab</title>
+    <style>
+      :root {
+        --bg: #0b0f17; --card: #131a26; --border: #243044; --text: #e6ecf5;
+        --muted: #8b98ad; --accent: #4c8dff; --green: #34d399; --red: #f87171;
+        --amber: #fbbf24; --blue: #60a5fa;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: var(--bg); color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        min-height: 100vh; padding: 20px 16px 40px;
+      }
+      .wrap { max-width: 440px; margin: 0 auto; }
+      header { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+      header .logo { color: var(--accent); font-size: 22px; }
+      header h1 { font-size: 18px; margin: 0; }
+      header .tag { color: var(--muted); font-size: 12px; margin-left: auto; }
+      .card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 16px; padding: 18px; margin-bottom: 16px;
+      }
+      .product { display: flex; gap: 14px; align-items: center; }
+      .product .thumb {
+        width: 64px; height: 64px; border-radius: 12px;
+        background: linear-gradient(135deg, #1f2a3d, #2b3b56);
+        display: grid; place-items: center; font-size: 30px;
+      }
+      .product h2 { margin: 0 0 4px; font-size: 16px; }
+      .product p { margin: 0; color: var(--muted); font-size: 13px; }
+      label { display: block; font-size: 12px; color: var(--muted); margin: 14px 0 5px; }
+      select, input {
+        width: 100%; background: var(--bg); border: 1px solid var(--border);
+        color: var(--text); border-radius: 10px; padding: 12px; font-size: 15px;
+      }
+      .row { display: flex; gap: 10px; }
+      .row > div { flex: 1; }
+      .total { display: flex; justify-content: space-between; align-items: baseline;
+        margin: 18px 0; font-size: 15px; color: var(--muted); }
+      .total b { font-size: 26px; color: var(--text); }
+      button.pay {
+        width: 100%; background: var(--accent); color: #05122b; border: none;
+        border-radius: 12px; padding: 15px; font-size: 16px; font-weight: 700;
+        cursor: pointer;
+      }
+      button.pay:disabled { opacity: .6; cursor: not-allowed; }
+      .status { text-align: center; padding: 8px 0; }
+      .badge {
+        display: inline-block; padding: 6px 14px; border-radius: 999px;
+        font-weight: 700; font-size: 15px; text-transform: capitalize;
+      }
+      .badge.pending, .badge.processing { color: var(--blue); background: rgba(96,165,250,.12); }
+      .badge.success { color: var(--green); background: rgba(52,211,153,.12); }
+      .badge.declined { color: var(--amber); background: rgba(251,191,36,.12); }
+      .badge.failed { color: var(--red); background: rgba(248,113,113,.12); }
+      .meta { color: var(--muted); font-size: 13px; margin-top: 12px; line-height: 1.6; }
+      .meta code { color: var(--text); }
+      .spinner {
+        width: 18px; height: 18px; border: 2px solid var(--border);
+        border-top-color: var(--accent); border-radius: 50%;
+        display: inline-block; vertical-align: -3px; margin-right: 8px;
+        animation: spin .8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .cfg { color: var(--muted); font-size: 11px; text-align: center; margin-top: 24px; }
+      .cfg a { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <span class="logo">◆</span>
+        <h1>Demo Store</h1>
+        <span class="tag">powered by PayFlow Lab</span>
+      </header>
+
+      <div class="card">
+        <div class="product">
+          <div class="thumb">🎧</div>
+          <div>
+            <h2>Wireless Headphones</h2>
+            <p>Noise-cancelling · 1 year warranty</p>
+          </div>
+        </div>
+
+        <label for="amount">Amount (major units)</label>
+        <input id="amount" type="number" value="499" min="1" step="0.01" />
+
+        <div class="row">
+          <div>
+            <label for="currency">Currency</label>
+            <select id="currency">
+              <option value="ZAR" selected>ZAR</option>
+              <option value="USD">USD</option>
+              <option value="NGN">NGN</option>
+              <option value="KES">KES</option>
+              <option value="GHS">GHS</option>
+            </select>
+          </div>
+          <div>
+            <label for="method">Method</label>
+            <select id="method">
+              <option value="card" selected>Card</option>
+              <option value="bank_transfer">Bank / EFT</option>
+              <option value="mobile_money">Mobile money</option>
+              <option value="wallet">Wallet</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="total">
+          <span>Total</span>
+          <b><span id="totalAmt">499.00</span> <span id="totalCur">ZAR</span></b>
+        </div>
+
+        <button class="pay" id="payBtn">Pay now</button>
+      </div>
+
+      <div class="card" id="resultCard" style="display:none">
+        <div class="status" id="statusLine"></div>
+        <div class="meta" id="meta"></div>
+      </div>
+
+      <div class="cfg">
+        API: <span id="apiBase">same origin</span> ·
+        <a href="/" target="_blank">open dashboard</a>
+      </div>
+    </div>
+
+    <script>
+      // API base: same origin by default. When wrapped as an APK (served from a
+      // different origin), set window.PAYFLOW_API or ?api=<url>.
+      const params = new URLSearchParams(location.search);
+      const API_BASE = params.get("api") || window.PAYFLOW_API || "";
+      document.getElementById("apiBase").textContent = API_BASE || "same origin";
+
+      const $ = (id) => document.getElementById(id);
+      const amountEl = $("amount"), curEl = $("currency"), methodEl = $("method");
+
+      function refreshTotal() {
+        $("totalAmt").textContent = (Number(amountEl.value) || 0).toFixed(2);
+        $("totalCur").textContent = curEl.value;
+      }
+      amountEl.addEventListener("input", refreshTotal);
+      curEl.addEventListener("change", refreshTotal);
+
+      function show(status, html) {
+        $("resultCard").style.display = "block";
+        $("statusLine").innerHTML =
+          status === "loading"
+            ? '<span class="spinner"></span> Processing…'
+            : '<span class="badge ' + status + '">' + status + "</span>";
+        $("meta").innerHTML = html || "";
+      }
+
+      async function poll(ref, tries) {
+        for (let i = 0; i < (tries || 20); i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          const res = await fetch(API_BASE + "/api/v1/payments/" + ref);
+          if (!res.ok) continue;
+          const p = await res.json();
+          if (p.status !== "pending" && p.status !== "processing") return p;
+        }
+        return null;
+      }
+
+      $("payBtn").addEventListener("click", async () => {
+        const btn = $("payBtn");
+        btn.disabled = true;
+        show("loading", "");
+        try {
+          const minor = Math.round((Number(amountEl.value) || 0) * 100);
+          const res = await fetch(API_BASE + "/api/v1/payments", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              merchantId: "DEMO_STORE",
+              amount: minor,
+              currency: curEl.value,
+              paymentMethod: methodEl.value,
+              customer: { email: "shopper@example.com" },
+            }),
+          });
+          if (!res.ok) throw new Error("Payment request failed (" + res.status + ")");
+          const created = await res.json();
+          const ref = created.paymentId;
+
+          show(
+            created.status,
+            "Reference <code>" + ref + "</code><br/>Routed to <code>" +
+              (created.provider || "—") + "</code> · awaiting confirmation…",
+          );
+
+          const final = (await poll(ref)) || created;
+          const extra =
+            final.status === "success"
+              ? "Payment confirmed. 🎉"
+              : final.failureCode
+                ? "Reason: <code>" + final.failureCode + "</code>"
+                : "Still pending — the provider hasn't confirmed yet.";
+          show(
+            final.status,
+            "Reference <code>" + ref + "</code><br/>Provider <code>" +
+              (final.provider || "—") + "</code><br/>" + extra,
+          );
+        } catch (e) {
+          show("failed", String(e && e.message ? e.message : e) +
+            "<br/><span style='color:var(--muted)'>If the server was idle it may be waking up — try again in ~30s.</span>");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      refreshTotal();
+    </script>
+  </body>
+</html>
