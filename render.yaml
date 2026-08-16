@@ -6,12 +6,17 @@ services:
     name: payflow-lab
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build && npm --prefix web install && npm --prefix web run build
+    # --include=dev forces devDependencies (TypeScript, @types/*, Vite) to install
+    # even though NODE_ENV=production would otherwise skip them. Needed to compile.
+    buildCommand: npm install --include=dev && npm run build && npm --prefix web install --include=dev && npm --prefix web run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      # Belt-and-suspenders: also tell npm not to drop devDependencies.
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
       # Supabase connection string — set this in the Render dashboard (do NOT commit it).
       # Supabase → Project Settings → Database → Connection string → URI.
       - key: DATABASE_URL
