@@ -85,6 +85,12 @@ body {
   background: var(--panel-2);
   border-color: var(--border);
 }
+a.tab-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  text-transform: none;
+}
 
 .content {
   max-width: 1200px;

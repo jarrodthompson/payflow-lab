@@ -67,6 +67,9 @@ export function createApp() {
     app.get("/merchant", (_req, res) => {
       res.sendFile(join(publicDir, "merchant.html"));
     });
+    app.get("/docs", (_req, res) => {
+      res.sendFile(join(publicDir, "docs.html"));
+    });
   }
 
   // Serve the built React dashboard (web/dist) if it exists. In dev you'd run

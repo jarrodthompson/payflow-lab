@@ -50,6 +50,9 @@ export function App() {
               {t}
             </button>
           ))}
+          <a className="tab tab-link" href="/docs" target="_blank" rel="noopener">
+            API docs ↗
+          </a>
         </nav>
       </header>
       <main className="content">

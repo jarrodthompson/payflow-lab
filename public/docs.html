@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PayFlow Lab Docs</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface-2: #eceff4;
+    --ink: #141922;
+    --muted: #58616f;
+    --border: #e0e5ec;
+    --accent: #2f6bff;
+    --accent-soft: rgba(47, 107, 255, 0.10);
+    --ok: #0f7a55; --ok-soft: rgba(15, 122, 85, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --danger: #bd3a2b; --danger-soft: rgba(189, 58, 43, 0.10);
+    --code-bg: #0e1320; --code-ink: #e7ecf5; --code-muted: #8892a6;
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.10);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0f17; --surface: #121926; --surface-2: #1a2332; --ink: #e6ecf5;
+      --muted: #94a1b5; --border: #253044; --accent: #5b93ff;
+      --accent-soft: rgba(91, 147, 255, 0.14);
+      --ok: #35d29a; --ok-soft: rgba(53, 210, 154, 0.14);
+      --warn: #f0b429; --warn-soft: rgba(240, 180, 41, 0.14);
+      --danger: #f2766a; --danger-soft: rgba(242, 118, 106, 0.14);
+      --code-bg: #05080f; --code-ink: #e7ecf5; --code-muted: #7c869a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 14px; padding: 14px 22px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+  .wordmark { font-family: var(--mono); font-weight: 600; font-size: 15px; letter-spacing: -0.02em; }
+  .wordmark .dot { color: var(--accent); }
+  .topbar .pill { font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 3px 9px; }
+  .topbar .spacer { flex: 1; }
+  .topbar .live { font-family: var(--mono); font-size: 12px; color: var(--ok); display: inline-flex; align-items: center; gap: 6px; }
+  .topbar .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+
+  .shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 0; max-width: 1180px; margin: 0 auto; }
+  nav.side { position: sticky; top: 57px; align-self: start; height: calc(100vh - 57px); overflow-y: auto; padding: 26px 16px 40px; border-right: 1px solid var(--border); }
+  nav.side .grp { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 20px 8px 8px; }
+  nav.side .grp:first-child { margin-top: 0; }
+  nav.side a { display: block; padding: 6px 10px; border-radius: 7px; color: var(--muted); font-size: 14px; line-height: 1.35; }
+  nav.side a:hover { color: var(--ink); background: var(--surface-2); text-decoration: none; }
+  nav.side a.active { color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+
+  main { padding: 40px 40px 120px; min-width: 0; }
+  section { margin-bottom: 52px; scroll-margin-top: 80px; }
+  section > h2 { font-size: 26px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .eyebrow { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 6px; }
+  h3 { font-size: 17px; letter-spacing: -0.01em; margin: 30px 0 8px; }
+  p, li { color: var(--ink); }
+  .lead { font-size: 18px; color: var(--muted); max-width: 68ch; }
+  main p, main ul, main ol { max-width: 72ch; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 5px; }
+  pre { background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.55; border: 1px solid rgba(255,255,255,0.06); }
+  pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+  pre .c { color: var(--code-muted); }
+  pre .s { color: #8fdca6; }
+
+  .hero { padding: 44px 40px 12px; max-width: 900px; }
+  .hero h1 { font-size: 40px; letter-spacing: -0.03em; margin: 8px 0 12px; line-height: 1.05; text-wrap: balance; }
+  .hero .sub { font-size: 19px; color: var(--muted); max-width: 66ch; }
+  .quicklinks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .quicklinks a { font-size: 14px; padding: 9px 15px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+  .quicklinks a:hover { border-color: var(--accent); text-decoration: none; }
+  .quicklinks a.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .card h4 { margin: 0 0 4px; font-size: 15px; }
+  .card p { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .card .tag { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; margin: 14px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); background: var(--surface-2); }
+  tr:last-child td { border-bottom: none; }
+  td code { white-space: nowrap; }
+
+  .ep { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); margin: 16px 0; overflow: hidden; box-shadow: var(--shadow); }
+  .ep > .row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .ep .path { font-family: var(--mono); font-size: 14px; font-weight: 600; }
+  .ep .body { padding: 4px 16px 16px; }
+  .ep .body p:first-child { margin-top: 12px; }
+  .method { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 4px 9px; border-radius: 6px; text-transform: uppercase; }
+  .method.get { color: var(--ok); background: var(--ok-soft); }
+  .method.post { color: var(--accent); background: var(--accent-soft); }
+  .method.delete { color: var(--danger); background: var(--danger-soft); }
+  .lock { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--warn); background: var(--warn-soft); padding: 3px 8px; border-radius: 6px; }
+
+  .note { border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 14.5px; }
+  .note.tip { border-left-color: var(--ok); background: var(--ok-soft); }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note.danger { border-left-color: var(--danger); background: var(--danger-soft); }
+  .note .lbl { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; display: block; margin-bottom: 4px; }
+  .note.tip .lbl { color: var(--ok); }
+  .note.warn .lbl { color: var(--warn); }
+  .note.danger .lbl { color: var(--danger); }
+  .note p { margin: 4px 0; max-width: none; }
+
+  .trouble { border: 1px solid var(--border); border-radius: 10px; margin: 12px 0; background: var(--surface); overflow: hidden; }
+  .trouble summary { cursor: pointer; padding: 14px 16px; font-weight: 600; font-size: 15px; list-style: none; display: flex; gap: 10px; align-items: baseline; }
+  .trouble summary::-webkit-details-marker { display: none; }
+  .trouble summary::before { content: "\25B8"; color: var(--muted); font-size: 12px; }
+  .trouble[open] summary::before { content: "\25BE"; }
+  .trouble summary .sym { font-family: var(--mono); font-size: 12.5px; color: var(--danger); font-weight: 500; }
+  .trouble .inner { padding: 0 16px 16px 32px; }
+  .trouble .inner p:first-child { margin-top: 0; }
+
+  hr.soft { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  footer { max-width: 1180px; margin: 0 auto; padding: 30px 40px 60px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+
+  @media (max-width: 820px) {
+    .shell { grid-template-columns: 1fr; }
+    nav.side { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 2px 4px; padding: 12px 16px; }
+    nav.side .grp { width: 100%; margin: 10px 6px 2px; }
+    nav.side a { padding: 5px 9px; font-size: 13px; }
+    main { padding: 26px 20px 90px; }
+    .hero { padding: 30px 20px 4px; }
+    .hero h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="wordmark">&#9670; PayFlow&nbsp;Lab<span class="dot"> &middot; docs</span></span>
+  <span class="pill">v0.1 &middot; phase 8</span>
+  <span class="spacer"></span>
+  <a class="live" href="/">&larr; back to dashboard</a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Payment aggregation &amp; orchestration simulator</div>
+  <h1>Operate, integrate, and troubleshoot PayFlow&nbsp;Lab</h1>
+  <p class="sub">A multi-PSP payment aggregator that routes simulated traffic across nine providers, handles webhooks, retries, reconciliation, and lets you inject failures to practise incident response &mdash; with a full REST API.</p>
+  <div class="quicklinks">
+    <a class="primary" href="#quickstart">Get started</a>
+    <a href="#api">API reference</a>
+    <a href="#logs">Check transaction logs</a>
+    <a href="#trouble">Troubleshooting</a>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="side" aria-label="Documentation sections">
+    <div class="grp">Guide</div>
+    <a href="#overview">Overview</a>
+    <a href="#quickstart">Getting started</a>
+    <a href="#dashboard">The dashboard</a>
+    <a href="#merchant">Merchant store</a>
+    <a href="#concepts">Core concepts</a>
+    <div class="grp">Reference</div>
+    <a href="#api">API overview &amp; auth</a>
+    <a href="#api-payments">Payments</a>
+    <a href="#api-sim">Simulation</a>
+    <a href="#api-stats">Stats</a>
+    <a href="#api-events">Events (logs)</a>
+    <a href="#api-routing">Routing</a>
+    <a href="#api-recon">Reconciliation</a>
+    <a href="#api-faults">Faults &amp; incidents</a>
+    <a href="#api-webhooks">Webhooks</a>
+    <div class="grp">Operate</div>
+    <a href="#logs">Checking logs</a>
+    <a href="#trouble">Troubleshooting</a>
+    <a href="#deploy">Deployment</a>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <div class="eyebrow">Overview</div>
+      <h2>What PayFlow Lab is</h2>
+      <p class="lead">A learning-grade payment aggregator: merchants integrate against one standardized API, and PayFlow routes each payment to one of nine payment service providers (PSPs), handling the messy reality of real payments &mdash; async webhooks, retries, failover, stuck payments, and reconciliation.</p>
+      <p>Every payment is simulated (no real money), which is exactly what makes it useful: you can generate thousands of transactions, deliberately break a provider, and practise diagnosing incidents the way a Payment Integration Specialist does on the job.</p>
+      <div class="cards">
+        <div class="card"><span class="tag">routing</span><h4>Capability-aware</h4><p>Each PSP supports specific currencies &amp; methods; routing picks eligible providers by weighted or performance strategy.</p></div>
+        <div class="card"><span class="tag">async</span><h4>Real webhooks</h4><p>Outcomes arrive later via signed webhooks &mdash; sometimes late, duplicated, or never.</p></div>
+        <div class="card"><span class="tag">resilience</span><h4>Retry &amp; failover</h4><p>Technical failures fail over to the next provider; timeouts verify before retrying to avoid double charges.</p></div>
+        <div class="card"><span class="tag">finance</span><h4>Reconciliation</h4><p>Compares our ledger against the PSP ledger and flags mismatches, missing records, and duplicates.</p></div>
+        <div class="card"><span class="tag">ops</span><h4>Fault injection</h4><p>Break a provider on demand or run a blind incident drill, then diagnose it from the dashboard.</p></div>
+        <div class="card"><span class="tag">observability</span><h4>Transaction log</h4><p>Every state change is a searchable event &mdash; filter by type, provider, reference, and time window.</p></div>
+      </div>
+      <h3>The provider roster</h3>
+      <p>All nine are simulated. Routing only considers providers that support both the payment's currency <em>and</em> method.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Provider</th><th>Currencies</th><th>Methods</th></tr></thead>
+        <tbody>
+          <tr><td><code>stripe</code></td><td>USD, EUR, GBP, ZAR</td><td>card</td></tr>
+          <tr><td><code>paystack</code></td><td>NGN, GHS, ZAR, USD</td><td>card, bank_transfer</td></tr>
+          <tr><td><code>flutterwave</code></td><td>NGN, KES, GHS, ZAR, USD</td><td>card, mobile_money, bank_transfer</td></tr>
+          <tr><td><code>payfast</code></td><td>ZAR</td><td>card, bank_transfer</td></tr>
+          <tr><td><code>ozow</code></td><td>ZAR</td><td>bank_transfer</td></tr>
+          <tr><td><code>peach</code></td><td>ZAR, USD, KES</td><td>card, mobile_money</td></tr>
+          <tr><td><code>airtel</code></td><td>KES, UGX, TZS</td><td>mobile_money</td></tr>
+          <tr><td><code>mpesa</code></td><td>KES, TZS</td><td>mobile_money</td></tr>
+          <tr><td><code>capitec</code></td><td>ZAR</td><td>bank_transfer, wallet</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="quickstart">
+      <div class="eyebrow">Getting started</div>
+      <h2>Run it &amp; make your first payment</h2>
+      <p>PayFlow Lab is deployed and live. The same server hosts the API, the operations dashboard, and the merchant store.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Surface</th><th>URL</th></tr></thead>
+        <tbody>
+          <tr><td>Operations dashboard</td><td><code>https://payflow-lab.onrender.com/</code></td></tr>
+          <tr><td>Merchant store</td><td><code>https://payflow-lab.onrender.com/merchant</code></td></tr>
+          <tr><td>API base</td><td><code>https://payflow-lab.onrender.com/api/v1</code></td></tr>
+          <tr><td>Health check</td><td><code>https://payflow-lab.onrender.com/health</code></td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><span class="lbl">Cold start</span><p>On the free hosting tier the service sleeps after ~15 minutes idle. The first request then takes ~30&ndash;60s to wake it. Open <code>/health</code> first, then use the app.</p></div>
+      <h3>Fill it with data</h3>
+      <ol>
+        <li><strong>Dashboard button</strong> &mdash; Overview tab &rarr; <em>Start simulation</em> (e.g. 300 payments at 150/sec).</li>
+        <li><strong>Merchant store</strong> &mdash; open <code>/merchant</code>, tap <em>Pay now</em>; the payment runs the full pipeline and appears on the Transactions tab.</li>
+      </ol>
+      <div class="note tip"><span class="lbl">Free-tier tip</span><p>On the free instance (1 CPU), keep simulations modest (say 50&ndash;150) so webhook delivery keeps up. Very large bursts can leave payments sitting in <code>pending</code> until the backlog drains.</p></div>
+      <h3>Run locally</h3>
+      <pre><code><span class="c"># needs Docker (for Postgres) + Node 22</span>
+docker compose up -d
+npm install
+npm run migrate
+npm run web:install &amp;&amp; npm run web:build
+npm run dev                   <span class="c"># http://localhost:3000</span></code></pre>
+    </section>
+
+    <section id="dashboard">
+      <div class="eyebrow">Guide</div>
+      <h2>The operations dashboard</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Tab</th><th>What it's for</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Overview</strong></td><td>KPI tiles, the traffic generator, and per-PSP performance with live health.</td></tr>
+          <tr><td><strong>Transactions</strong></td><td>Filterable list; click a row for the inspector (details + event timeline).</td></tr>
+          <tr><td><strong>Logs</strong></td><td>Search the transaction event log across all payments.</td></tr>
+          <tr><td><strong>Reconciliation</strong></td><td>Run reconciliation over a window and drill into findings by type.</td></tr>
+          <tr><td><strong>Routing</strong></td><td>Switch routing strategy live; view provider health and capabilities.</td></tr>
+          <tr><td><strong>Incidents</strong></td><td>Start a blind incident drill, or inject faults into a provider.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><span class="lbl">Admin actions in the browser</span><p>The dashboard's write actions call protected endpoints. They work from the browser only when <code>ADMIN_API_KEY</code> is <em>not</em> set on the server. If it is set, use the API with the <code>x-admin-key</code> header instead.</p></div>
+    </section>
+
+    <section id="merchant">
+      <div class="eyebrow">Guide</div>
+      <h2>The merchant store</h2>
+      <p>A demo storefront at <code>/merchant</code> that behaves like a real merchant integration: it holds no data of its own and simply calls the aggregator's API. Pick an amount, currency, and method, tap <em>Pay now</em>, and it polls for the outcome &mdash; which then shows up on the dashboard.</p>
+      <div class="note tip"><span class="lbl">Why does it keep choosing one provider?</span><p>Routing is weighted-random across all <em>eligible</em> providers for that currency + method. Over a handful of purchases it can look skewed &mdash; especially mobile-money / bank-transfer combos where only two providers qualify. Run a simulation or ~10 card+ZAR purchases and you'll see the spread.</p></div>
+    </section>
+
+    <section id="concepts">
+      <div class="eyebrow">Guide</div>
+      <h2>Core concepts</h2>
+      <h3>Payment lifecycle</h3>
+      <pre><code>created &rarr; processing &rarr; pending &rarr; success | declined | failed
+                                   success &rarr; refunded</code></pre>
+      <p>Amounts are stored in <strong>minor units</strong> (cents/kobo) as integers &mdash; <code>49900</code> means 499.00.</p>
+      <h3>Routing</h3>
+      <ul>
+        <li><code>rules</code> &mdash; deterministic priority by base weight.</li>
+        <li><code>weighted</code> &mdash; distribute across eligible providers by weight (default).</li>
+        <li><code>performance</code> &mdash; prefer providers with a healthy recent success rate.</li>
+      </ul>
+      <h3>Idempotency</h3>
+      <p>Send an <code>Idempotency-Key</code> header on <code>POST /payments</code>. A repeat with the same key returns the original payment; the same key with a different body is a <code>409</code>.</p>
+      <h3>Webhooks &amp; retries</h3>
+      <p>Most payments return <code>pending</code> immediately; the terminal outcome arrives later via a signed, deduplicated webhook. Technical failures fail over to the next provider; on a timeout, PayFlow verifies before retrying so a charge that went through is never repeated.</p>
+      <h3>Reconciliation</h3>
+      <p>The PSP keeps its own ground-truth ledger. Reconciliation compares it against ours and reports <code>STATUS_MISMATCH</code>, <code>AMOUNT_MISMATCH</code>, <code>MISSING_AT_PSP</code>, <code>MISSING_IN_AGGREGATOR</code>, and <code>DUPLICATE</code>.</p>
+      <h3>Faults &amp; incident drills</h3>
+      <p>Inject faults (expired credentials, timeouts, killed webhooks, degraded approval). An incident drill applies a hidden fault to a random provider; you diagnose it, then resolve to reveal the root cause.</p>
+    </section>
+
+    <section id="api">
+      <div class="eyebrow">Reference</div>
+      <h2>API overview &amp; auth</h2>
+      <p>REST over JSON. All amounts are integers in minor units. Base URL:</p>
+      <pre><code>https://payflow-lab.onrender.com/api/v1</code></pre>
+      <p>Error envelope:</p>
+      <pre><code>{ <span class="s">"error"</span>: { <span class="s">"code"</span>: <span class="s">"VALIDATION_ERROR"</span>, <span class="s">"message"</span>: <span class="s">"..."</span> } }</code></pre>
+      <h3>Authentication</h3>
+      <p>Merchant and read endpoints are open. <strong>Admin endpoints</strong> are protected <em>only when the server has an <code>ADMIN_API_KEY</code> set</em> &mdash; then they require <code>x-admin-key: &lt;your key&gt;</code>. Endpoints below are tagged <span class="lock">admin</span> where the key applies.</p>
+    </section>
+
+    <section id="api-payments">
+      <h2>Payments</h2>
+      <div class="ep">
+        <div class="row"><span class="method post">post</span><span class="path">/api/v1/payments</span></div>
+        <div class="body">
+          <p>Create a payment. <code>201</code> for new, <code>200</code> for an idempotent replay. Optional header <code>Idempotency-Key</code>.</p>
+          <div class="tablewrap"><table>
+            <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><code>merchantId</code></td><td>string</td><td>required</td></tr>
+              <tr><td><code>amount</code></td><td>integer</td><td>minor units, &gt; 0</td></tr>
+              <tr><td><code>currency</code></td><td>string</td><td>3-letter, e.g. <code>ZAR</code></td></tr>
+              <tr><td><code>paymentMethod</code></td><td>string</td><td><code>card</code> &middot; <code>bank_transfer</code> &middot; <code>mobile_money</code> &middot; <code>wallet</code></td></tr>
+              <tr><td><code>customer.email</code></td><td>string</td><td>optional</td></tr>
+            </tbody>
+          </table></div>
+          <pre><code>curl -X POST https://payflow-lab.onrender.com/api/v1/payments \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{"merchantId":"M1","amount":49900,"currency":"ZAR","paymentMethod":"card"}'</span></code></pre>
+        </div>
+      </div>
+      <div class="ep">
+        <div class="row"><span class="method get">get</span><span class="path">/api/v1/payments</span></div>
+        <div class="body"><p>List / filter (query: <code>status</code>, <code>provider</code>, <code>currency</code>, <code>merchantId</code>, <code>limit</code>, <code>offset</code>).</p></div>
+      </div>
+      <div class="ep">
+        <div class="row"><span class="method get">get</span><span class="path">/api/v1/payments/:reference</span></div>
+        <div class="body"><p>Fetch one payment by its <code>PAY_&hellip;</code> reference.</p></div>
+      </div>
+      <div class="ep">
+        <div class="row"><span class="method get">get</span><span class="path">/api/v1/payments/:reference/timeline</span></div>
+        <div class="body"><p>The full event timeline for a payment.</p></div>
+      </div>
+    </section>
+
+    <section id="api-sim">
+      <h2>Simulation</h2>
+      <div class="ep">
+        <div class="row"><span class="method post">post</span><span class="path">/api/v1/simulation/start</span><span class="lock">admin</span></div>
+        <div class="body"><p>Generate bulk traffic. Body <code>{ "transactions": 300, "transactionsPerSecond": 150 }</code>. Returns a run id.</p></div>
+      </div>
+      <div class="ep"><div class="row"><span class="method get">get</span><span class="path">/api/v1/simulation</span></div><div class="body"><p>List runs.</p></div></div>
+      <div class="ep"><div class="row"><span class="method get">get</span><span class="path">/api/v1/simulation/:runId</span></div><div class="body"><p>Progress for a run.</p></div></div>
+    </section>
+
+    <section id="api-stats">
+      <h2>Stats</h2>
+      <div class="ep"><div class="row"><span class="method get">get</span><span class="path">/api/v1/stats</span></div><div class="body"><p>Totals, approval rate, value, and per-provider performance.</p></div></div>
+    </section>
+
+    <section id="api-events">
+      <h2>Events (transaction log)</h2>
+      <div class="ep">
+        <div class="row"><span class="method get">get</span><span class="path">/api/v1/events</span></div>
+        <div class="body">
+          <p>Search the event log (query: <code>type</code>, <code>reference</code>, <code>provider</code>, <code>sinceMinutes</code>, <code>limit</code>).</p>
+          <pre><code>curl <span class="s">"https://payflow-lab.onrender.com/api/v1/events?type=ROUTING_FAILOVER&amp;sinceMinutes=30"</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="api-routing">
+      <h2>Routing</h2>
+      <div class="ep"><div class="row"><span class="method get">get</span><span class="path">/api/v1/routing</span></div><div class="body"><p>Strategy, weights, capabilities, live provider health.</p></div></div>
+      <div class="ep"><div class="row"><span class="method post">post</span><span class="path">/api/v1/routing</span><span class="lock">admin</span></div><div class="body"><p>Switch strategy: <code>{ "strategy": "performance" }</code> (<code>rules</code> | <code>weighted</code> | <code>performance</code>).</p></div></div>
+    </section>
+
+    <section id="api-recon">
+      <h2>Reconciliation</h2>
+      <div class="ep"><div class="row"><span class="method post">post</span><span class="path">/api/v1/reconciliation/run</span><span class="lock">admin</span></div><div class="body"><p>Run over a window: <code>{ "windowMinutes": 10 }</code>. Returns counts + a <code>runId</code>.</p></div></div>
+      <div class="ep"><div class="row"><span class="method get">get</span><span class="path">/api/v1/reconciliation</span></div><div class="body"><p>List recent runs.</p></div></div>
+      <div class="ep"><div class="row"><span class="method get">get</span><span class="path">/api/v1/reconciliation/:runId</span></div><div class="body"><p>Full findings for a run.</p></div></div>
+    </section>
+
+    <section id="api-faults">
+      <h2>Faults &amp; incidents</h2>
+      <div class="ep"><div class="row"><span class="method get">get</span><span class="path">/api/v1/faults</span></div><div class="body"><p>Active faults per provider.</p></div></div>
+      <div class="ep">
+        <div class="row"><span class="method post">post</span><span class="path">/api/v1/faults</span><span class="lock">admin</span></div>
+        <div class="body">
+          <p>Inject a fault. Fields: <code>provider</code> (required), <code>authError</code>, <code>forceTimeout</code>, <code>successRate</code> (0&ndash;1), <code>webhooksDisabled</code>, <code>httpErrorRate</code> (0&ndash;1), <code>extraLatencyMs</code>.</p>
+          <pre><code>curl -X POST https://payflow-lab.onrender.com/api/v1/faults \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{"provider":"mpesa","successRate":0.2}'</span></code></pre>
+        </div>
+      </div>
+      <div class="ep"><div class="row"><span class="method delete">delete</span><span class="path">/api/v1/faults/:provider</span><span class="lock">admin</span></div><div class="body"><p>Clear one provider. <code>POST /api/v1/faults/clear</code> clears all.</p></div></div>
+      <div class="ep"><div class="row"><span class="method post">post</span><span class="path">/api/v1/incidents/start</span><span class="lock">admin</span></div><div class="body"><p>Start a drill (hidden fault, symptom only).</p></div></div>
+      <div class="ep"><div class="row"><span class="method get">get</span><span class="path">/api/v1/incidents</span></div><div class="body"><p>List incidents (<code>?reveal=true</code> on one to show the cause).</p></div></div>
+      <div class="ep"><div class="row"><span class="method post">post</span><span class="path">/api/v1/incidents/:id/resolve</span><span class="lock">admin</span></div><div class="body"><p>Resolve &mdash; lifts the fault and reveals the root cause.</p></div></div>
+    </section>
+
+    <section id="api-webhooks">
+      <h2>Webhooks</h2>
+      <div class="ep">
+        <div class="row"><span class="method post">post</span><span class="path">/webhooks/:provider</span></div>
+        <div class="body"><p>Inbound webhook (nine providers). Called by the provider, not you. Body read raw, signature verified, deduplicated by id; bad signature &rarr; <code>401</code>.</p></div>
+      </div>
+    </section>
+
+    <section id="logs">
+      <div class="eyebrow">Operate</div>
+      <h2>Checking transaction logs</h2>
+      <p>Every state change is a log event. Three levels, finest to broadest:</p>
+      <h3>1 &middot; One payment &mdash; the timeline</h3>
+      <p>Transactions tab &rarr; click a payment, or <code>GET /api/v1/payments/PAY_&hellip;/timeline</code>:</p>
+      <pre><code>PAYMENT_CREATED &rarr; ROUTING_DECISION &rarr; PSP_REQUEST_SENT &rarr; PSP_RESPONSE_RECEIVED
+&rarr; WEBHOOK_RECEIVED &rarr; WEBHOOK_SIGNATURE_VERIFIED &rarr; PAYMENT_CONFIRMED</code></pre>
+      <h3>2 &middot; Across all payments &mdash; the Logs tab</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th>In a log platform you&hellip;</th><th>In PayFlow Lab you&hellip;</th></tr></thead>
+        <tbody>
+          <tr><td>pick a log set</td><td>choose an <strong>event type</strong></td></tr>
+          <tr><td>filter by a field</td><td>filter by <strong>provider</strong> / <strong>reference</strong></td></tr>
+          <tr><td>set a time range</td><td>set <strong>Since (min)</strong></td></tr>
+          <tr><td>read the raw log line</td><td>read the <strong>detail</strong> JSON</td></tr>
+        </tbody>
+      </table></div>
+      <h3>3 &middot; System logs &mdash; the server console</h3>
+      <p>Structured JSON logs: every HTTP request plus <code>WEBHOOK_SIGNATURE_INVALID</code>, <code>WEBHOOK_DUPLICATE_IGNORED</code>, and reconciliation summaries.</p>
+    </section>
+
+    <section id="trouble">
+      <div class="eyebrow">Operate</div>
+      <h2>Troubleshooting</h2>
+      <h3>Using the app</h3>
+      <details class="trouble"><summary>Dashboard / merchant store is empty <span class="sym">no data</span></summary><div class="inner"><p>No traffic yet. Overview &rarr; <em>Start simulation</em>, or pay on <code>/merchant</code>.</p></div></details>
+      <details class="trouble"><summary>Dashboard buttons do nothing / 401 <span class="sym">UNAUTHORIZED</span></summary><div class="inner"><p>Admin actions are gated by <code>ADMIN_API_KEY</code>, which the browser doesn't send. Remove that env var, or call the API with the <code>x-admin-key</code> header.</p></div></details>
+      <details class="trouble"><summary>Every payment picks the same provider <span class="sym">looks stuck</span></summary><div class="inner"><p>Weighted-random across eligible providers; small samples look skewed. Run a simulation or ~10 card+ZAR purchases, or switch to <code>performance</code> routing.</p></div></details>
+      <details class="trouble"><summary>Many payments stuck in <code>pending</code> <span class="sym">no webhook</span></summary><div class="inner"><p>Confirmation webhooks haven't arrived. On the free tier, a large simulation burst can back up webhook delivery (single CPU) &mdash; use smaller runs, or wait for the backlog to drain. Otherwise it's a simulated undelivered outcome or a <code>webhooksDisabled</code> fault; reconciliation flags these as <code>STATUS_MISMATCH</code>.</p></div></details>
+      <details class="trouble"><summary>First request is very slow <span class="sym">~30&ndash;60s</span></summary><div class="inner"><p>Free-tier cold start &mdash; the service sleeps after ~15 min idle. Hit <code>/health</code> first.</p></div></details>
+      <h3>Deployment</h3>
+      <details class="trouble"><summary>Build fails: "Cannot find name 'process'" / missing @types <span class="sym">build error</span></summary><div class="inner"><p><code>NODE_ENV=production</code> makes npm skip devDependencies. Use <code>npm install --include=dev</code> (and for the web build), and/or <code>NPM_CONFIG_PRODUCTION=false</code>.</p></div></details>
+      <details class="trouble"><summary>DB connect fails: <code>ENETUNREACH &hellip; :5432</code> (IPv6) <span class="sym">ENETUNREACH</span></summary><div class="inner"><p>Supabase's direct host is IPv6-only. Use the <strong>Session pooler</strong> string (<code>aws-0-&lt;region&gt;.pooler.supabase.com:5432</code>, IPv4).</p></div></details>
+      <details class="trouble"><summary>DB: <code>password authentication failed for user "postgres"</code> <span class="sym">28P01</span></summary><div class="inner"><p>The pooler username must include the ref: <code>postgres.&lt;ref&gt;</code>, not bare <code>postgres</code>. Fix the username in <code>DATABASE_URL</code>.</p></div></details>
+      <details class="trouble"><summary>DB: <code>ECIRCUITBREAKER &hellip; temporarily blocked</code> <span class="sym">XX000</span></summary><div class="inner"><p>The pooler blocks after repeated auth failures. Fix credentials, then let it cool down (the app backs off; or suspend ~5 min).</p></div></details>
+      <details class="trouble"><summary>Supabase won't connect after days idle <span class="sym">paused</span></summary><div class="inner"><p>Free projects pause after ~7 days idle &mdash; restore it from the Supabase dashboard.</p></div></details>
+    </section>
+
+    <section id="deploy">
+      <div class="eyebrow">Operate</div>
+      <h2>Deployment</h2>
+      <p>A single web service (API + dashboard + merchant page) with managed Postgres. Live on Render + Supabase.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Env var</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>DATABASE_URL</code></td><td>Postgres connection (Session pooler string for Supabase)</td></tr>
+          <tr><td><code>PGSSL</code></td><td><code>true</code> for managed Postgres</td></tr>
+          <tr><td><code>AUTO_MIGRATE</code></td><td><code>true</code> &mdash; create schema on boot</td></tr>
+          <tr><td><code>ADMIN_API_KEY</code></td><td>protects admin endpoints (optional)</td></tr>
+          <tr><td><code>CORS_ORIGIN</code></td><td>allowed origin for the merchant app</td></tr>
+          <tr><td><code>BASE_URL</code></td><td>public URL for webhooks (auto on Render)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><span class="lbl">Repo</span><p>Source &amp; step-by-step deploy guide: <a href="https://github.com/jarrodthompson/payflow-lab" target="_blank" rel="noopener">github.com/jarrodthompson/payflow-lab</a>.</p></div>
+    </section>
+  </main>
+</div>
+
+<footer>PayFlow Lab &mdash; payment aggregation &amp; orchestration simulator. All payments are simulated.</footer>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.side a'));
+    var map = {};
+    links.forEach(function (a) { var id = a.getAttribute('href').slice(1); var el = document.getElementById(id); if (el) map[id] = a; });
+    if (!('IntersectionObserver' in window)) return;
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { links.forEach(function (l) { l.classList.remove('active'); }); var a = map[e.target.id]; if (a) a.classList.add('active'); }
+      });
+    }, { rootMargin: '-70px 0px -75% 0px' });
+    Object.keys(map).forEach(function (id) { var el = document.getElementById(id); if (el) obs.observe(el); });
+  })();
+</script>
+</body>
+</html>
